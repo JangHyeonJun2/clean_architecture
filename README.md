@@ -147,5 +147,45 @@ buckpal
 #### 기능 패키징의 아쉬운점
 1. 계층에 의한 패키징 방식보다 아키텍처의 가시성을 훨씬 더 떨어뜨린다.
 2. 도메인 코드와 영속성 코드 간의 의존성을 역선시켜서 SendMoneyService가 AccountRespository 인터페이스만 알고 있고 구현체는 알 수 없도록 했으에도 불구하고, package-private 접근 수준을 이용해 도메인 코드가 실수로 영속성 코드에 의존하는 것을 막을 수 없다. (이 부분 아직 이해가 덜 되었다,,,,)
+
+
+아키텍처적으로 표현력 있는 패키지 구조
+-----------
+- 육각형 아키텍처에서 구조적으로 핵심적인 요소는 엔티티, 유스케이스, 인커밍/아웃고잉 포트, 인커밍/아웃고잉(혹은 주도하거나 주도되는) 어댑터다.
+```
+buckpal
+ㄴ Account
+	ㄴ adapter
+		ㄴ in
+			ㄴ web
+				ㄴ AccountController
+		ㄴ out
+			ㄴ persistence
+				ㄴ AccountPersistenceAdapter
+				ㄴ SpringDataAccountRepository
+	ㄴ domain
+		ㄴ Account
+		ㄴ Activity
+	ㄴ application
+		ㄴ SendMoneyService
+		ㄴ port
+			ㄴ in 
+				ㄴ SencdMoneyUseCase
+			ㄴ out
+				ㄴ LoadAccountPort
+				ㄴ UpdateAccountStatePort
+```
+- 아키텍처적으로 표현력있는 패키지 구조에서는 각 아키텍처 요소들에 정해진 위치가 있다.
+
+### 구성
+- 최상위에는 Account와 관련된 유스케이스를 구현한 모듈임을 나타내는 account 패키지가 있다. 그 다음 레벨에는 도메인 모델이 속한 domain 패키지가 있다. application 패키지는 도메인 모델을 둘러싼 서비스 계층을 포함한다. **SendMoneyService는** 인커밍 포트 인터페이스인 **SendMoneyUseCase를** 구현하고, 아웃고잉 포트 인터페이스이자 영속성 어댑터에 의해 구현된 **LoadAccountPort와** **UpdateAccountStatePort** 를 사용한다.
+
+#### adapter 패키지
+- 애플리케이션 계층의 인커밍 포트를 호출하는 인커밍 어댑터와 애플리케이션 계층의 아웃고잉 포트에 대한 구현을 제공하는 아웃고잉 adapter를 포함한다.
+- Buckpal 예제의 경우 각각의 하위 패키지를 가진 web 어댑터와 persistenc adapter로 이뤄진 간단한 웹 어플리케이션이 된다.
+
+#### 접근의 의미
+- 위와 같이 패키지가 아주 많다는 것은 모든 것을 public으로 만들어서 패키지 간의 접근을 허용해야 한다는 것을 의미하는 게 아닐까?
+  → 적어도 어댑터 패키지에 대해서는 그렇지 않다. 이 패키지에 들어 있는 모든 클래스들은 application 패키지 내에 있는 포트 인터페이스를 통하지 않고는 바깥에는 호출되지 않기 때문에 package-private 접근 수준으로 둬도 된다. **그렇기 때문에 애플리케이션 계층에서 어댑터 클래스로 향하는 우발적인 의존성은 있을 수 없다.!**
 </div>
 </details>
