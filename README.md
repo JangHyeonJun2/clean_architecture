@@ -127,6 +127,25 @@ buckpal
   1. 애플리케이션의 기능 조각(functional slice)이나 특성(feature)을 구분 짓는 패키지 경계가 없다.
      해당 구조에서 사용자를 관리하는 기능을 추가해야 한다면 **web 패키지에 UserController를 추가하고, domain 패키지에 UserService, UserRepository, User를 추가하고 psersistence 패키지에 UserRepositoryImpl을 추가**하게 될 것이다.
   2. 애플리케이션이 어떤 유스케이스들을 제공하는 파악 x.
-     AccountService와 AccountController가 어떤 유스케이스를 구현했는지 파악할 수 가 없다. (**내가 이해한 바로는 현재 클래스명으로 어떤 로직이 구현되어있는지 알 수 있냐? 이런 의미로 받아들임**)
+     Account기Service와 AccountController가 어떤 유스케이스를 구현했는지 파악할 수 가 없다. (**내가 이해한 바로는 현재 클래스명으로 어떤 로직이 구현되어있는지 알 수 있냐? 이런 의미로 받아들임**)
+
+기능으로 구성하기
+================
+```
+buckpal
+ㄴ account
+	ㄴ Account
+	ㄴ AccountController
+	ㄴ AccountRepository
+	ㄴ AccountRepositoryImpl
+	ㄴ SendMoneyService
+```
+- 위 패키지 구조는 기능으로 구성한 패키지 구조이다. (**기능을 기준으로 코드를 구성하면 기반 아키텍처가 명확하게 보이지 않는다.**)
+- 각 기능을 묶은 새로운 그룹은 account와 같은 레벨의 새로운 패키지로 들어가고, 패키지 외부에서 접근되면 안 되는 클래스들에 대해 package-private 접근 수준을 이용해 패키지 간의 경계를 강화 할 수 있다.
+- 또한 **계층으로 구성하기** 에서의 AccountService의 책임을 좁히기 위해 SendMoneyService로 클래스명을 바꿨다. → *이제 송금하기 유스케이스를 구현한 코드를 클래스명만 보고도 바로 찾을 수 있다.* (소리나는 아키텍처의 예시)
+
+#### 기능 패키징의 아쉬운점
+1. 계층에 의한 패키징 방식보다 아키텍처의 가시성을 훨씬 더 떨어뜨린다.
+2. 도메인 코드와 영속성 코드 간의 의존성을 역선시켜서 SendMoneyService가 AccountRespository 인터페이스만 알고 있고 구현체는 알 수 없도록 했으에도 불구하고, package-private 접근 수준을 이용해 도메인 코드가 실수로 영속성 코드에 의존하는 것을 막을 수 없다. (이 부분 아직 이해가 덜 되었다,,,,)
 </div>
 </details>
