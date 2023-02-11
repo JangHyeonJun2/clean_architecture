@@ -104,5 +104,29 @@
 <details>
 <summary>3장 코드 구성하기</summary>
 <div markdown="1">
+이번 장에서는 코드를 구성하는 몇 가지 방법을 살펴보고, 육각형 아키텍처를 직접적으로 반영하는 표현력 있는 패키지 구조를 소개한다.
+
+### 계층을 이용한 패키지 구조
+```
+buckpal
+ㄴ domain
+	ㄴ Account
+	ㄴ Activity
+	ㄴ AccountRepository
+	ㄴ AccountService
+ㄴ persistence
+	ㄴ AccountRepositoryImpl
+ㄴ web
+	ㄴ AccountController
+```
+- 웹 계층, 도메인 게층, 영속성 계층 각각에 대해 전용 패키지인 **web, domain, persistence**를 뒀다. 해당 패키지 구조는 **의존성 역전 원칙을 적용해서 의존성이 domain 패키지에 있는 도메인 코드만**을 향하도록 해두었다.
+- 여기서는 domain 패키지에 AccountRepository 인터페이스를 추가하고, persistence 패키지에 AccountRepositoryImpl 구현체를 둠으로써 의존성을 역전시켰다.
+
+#### 아직 부족하다.
+- 세 가지 이유로 위 패키지 구조도 최적의 구조가 아니다.
+  1. 애플리케이션의 기능 조각(functional slice)이나 특성(feature)을 구분 짓는 패키지 경계가 없다.
+     해당 구조에서 사용자를 관리하는 기능을 추가해야 한다면 **web 패키지에 UserController를 추가하고, domain 패키지에 UserService, UserRepository, User를 추가하고 psersistence 패키지에 UserRepositoryImpl을 추가**하게 될 것이다.
+  2. 애플리케이션이 어떤 유스케이스들을 제공하는 파악 x.
+     AccountService와 AccountController가 어떤 유스케이스를 구현했는지 파악할 수 가 없다. (**내가 이해한 바로는 현재 클래스명으로 어떤 로직이 구현되어있는지 알 수 있냐? 이런 의미로 받아들임**)
 </div>
 </details>
