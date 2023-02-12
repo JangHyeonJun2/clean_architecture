@@ -189,3 +189,9 @@ buckpal
   → 적어도 어댑터 패키지에 대해서는 그렇지 않다. 이 패키지에 들어 있는 모든 클래스들은 application 패키지 내에 있는 포트 인터페이스를 통하지 않고는 바깥에는 호출되지 않기 때문에 package-private 접근 수준으로 둬도 된다. **그렇기 때문에 애플리케이션 계층에서 어댑터 클래스로 향하는 우발적인 의존성은 있을 수 없다.!**
 </div>
 </details>
+
+<details>
+<summary>4장 유스케이스 구현하기</summary>
+<div markdown="1">
+</div>
+</details>
