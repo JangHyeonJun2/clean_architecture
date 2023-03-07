@@ -193,5 +193,90 @@ buckpal
 <details>
 <summary>4장 유스케이스 구현하기</summary>
 <div markdown="1">
+
+ 유스케이스 둘러보기
+----------
+01. 입력을 받는다.
+02. 비즈니스 규칙을 검증한다.
+03. 모델 상태를 조작한다.
+04. 출력을 반환한다.
+
+- 유스케이스는 인커밍 어댑터로부터 입력을 받는다. 이 단계를 왜 '입력 유효성 검증'으로 부르지 않는지 의아할 수 있다. 필자는 유스케이스 코드가 도메인 로직에만 신경 써야 하고 입력 유효성  검증으로 오염되면 안 된다고 생각하기 때문임.
+- 하지만 유스케이스는 `비즈니스 규칙(business rule)` 을 검증할 책임이 있다. `이번 장의 후반부에서 입력 유효성 검증과 비즈니스 규칙 검증의 차이점에 대해서 살펴보고자 한다.`
+
+## 넓은 서비스 문제를 피하자
+- 모든 유스케이스를 한 서비스 클래스에 모두 넣지 않고 각 유스케이스별로 분리된 각각의 서비스로 만든다.
+```java
+@RequredArgsConstructor
+@Transactional
+public class SendMoneyService implements SendMoneyUseCase {
+	private final LoadAccountPort loadAccountPort;
+	private final AccountLock accountLock;
+	private final UpdateAccountStatePort updateAccountStatePort;
+
+	@Override
+	public boolean snedMoney(SendMoneyCommand command) {
+		// TODO: 비즈니스 규칙 검증
+		// TODO: 모델 상태 조작
+		// TODO: 출력 값 반환
+	}
+}
+```
+
+#### 서비스 구조
+[![2023-03-07-23-17-26.png](https://i.postimg.cc/wM1zXz33/2023-03-07-23-17-26.png)](https://postimg.cc/RJx2mj7z)
+- 하나의 서비스가 하나의 유스케이스를 구현하고, 도메인 모델을 변경하고 변경된 상태를 저장하기 위해 아웃고잉 포트를 호출한다.
+- 이제 위 코드에 남겨진 //TODO를 살펴보자
+
+입력 유효성 검증
+------------
+- 유스케이스에서 필요로 하는 것을 호출자(caller)가 모두 검증했다고 믿을 수 있을까? 또한 유스케이스는 하나 이상의 어댑터에서 호출될 텐데, 그러면 유효성 검증을 각 어댑터에서 전부 구현해야 한다. ( 별로 좋은 방법은 아닌듯,,,?)
+- 애플리케이션 계층에서 입력 유효성을 검증해야 하는 이유는, 그렇게 하지 않을 경우 애플리케이션 코어 바깥쪽으로부터 유효하지 않은 입력값을 받게 되고, 모델의 상태를 해칠 수 있기 때문이다.
+
+### 아니 그럼 도대체 어디서 다뤄??
+- **입력모델(input model)** 이 이 문제를 다루도록 해보자. 입력모델은 `SendMoneyCommand` 로 예시를 들어보겠다.
+```java
+@Getter
+public class SendMoneyCommand {
+	private final AccountId sourceAccountId;
+	private final AccountId targetAccountId;
+	private final Money money;
+
+	public SendMoneyCommand(AccountId sai, AccountId tai, Money m) {
+		this.sourceAccountId = sai;
+		this.targetAccountId = tai;
+		this.money = money;
+		requireNonNull(sourceAccountId);
+		requireNonNull(targetAccountId);
+		requireNonNull(money);
+		requireGreaterThan(money, 0);
+	}
+}
+```
+- SendMOneyCommand의 필드에 final을 지정해 불변 필드로 만들었다. 따라서 일단 생성에 성공하고 나면 상태는 유효하고 이후에 잘못된 상태로 변경할 수 없다는 사실을 보장할 수 있다.
+
+#### Bean Validation API
+- 해당 API를 작성하면 위 코드를 더 간편하게 만들 수 있다.
+```java
+@Getter
+public class SendMoneyCommand extends SelfValidating<SendMoneyCommand> {
+	@NotNull
+	private final Account.AccountId sourceAccountId;
+	...
+
+	public SendMoneyCommand(
+		Account.AccountId sai, 
+		Account.AccountId tai, 
+		Money m) {
+		this.sourceAccountId = sai;
+		this.targetAccountId = tai;
+		this.money = money;
+		...
+		this.validateSelf(); // 여기랑 extends를 왜 받는지 의문임...
+		
+	}
+}
+```
+- Controller 파라미터에서 `validation` 애노테이션을 사용할 때는 따로 상속이나 구현했던게 없었는데... 위에 코드 찾아보기.
 </div>
 </details>
