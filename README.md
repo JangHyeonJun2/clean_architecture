@@ -193,5 +193,39 @@ buckpal
 <details>
 <summary>4장 유스케이스 구현하기</summary>
 <div markdown="1">
+
+ 유스케이스 둘러보기
+----------
+01. 입력을 받는다.
+02. 비즈니스 규칙을 검증한다.
+03. 모델 상태를 조작한다.
+04. 출력을 반환한다.
+
+- 유스케이스는 인커밍 어댑터로부터 입력을 받는다. 이 단계를 왜 '입력 유효성 검증'으로 부르지 않는지 의아할 수 있다. 필자는 유스케이스 코드가 도메인 로직에만 신경 써야 하고 입력 유효성  검증으로 오염되면 안 된다고 생각하기 때문임.
+- 하지만 유스케이스는 `비즈니스 규칙(business rule)` 을 검증할 책임이 있다. `이번 장의 후반부에서 입력 유효성 검증과 비즈니스 규칙 검증의 차이점에 대해서 살펴보고자 한다.`
+
+## 넓은 서비스 문제를 피하자
+- 모든 유스케이스를 한 서비스 클래스에 모두 넣지 않고 각 유스케이스별로 분리된 각각의 서비스로 만든다.
+```java
+@RequredArgsConstructor
+@Transactional
+public class SendMoneyService implements SendMoneyUseCase {
+	private final LoadAccountPort loadAccountPort;
+	private final AccountLock accountLock;
+	private final UpdateAccountStatePort updateAccountStatePort;
+
+	@Override
+	public boolean snedMoney(SendMoneyCommand command) {
+		// TODO: 비즈니스 규칙 검증
+		// TODO: 모델 상태 조작
+		// TODO: 출력 값 반환
+	}
+}
+```
+
+#### 서비스 구조
+[![2023-03-07-23-17-26.png](https://i.postimg.cc/wM1zXz33/2023-03-07-23-17-26.png)](https://postimg.cc/RJx2mj7z)
+- 하나의 서비스가 하나의 유스케이스를 구현하고, 도메인 모델을 변경하고 변경된 상태를 저장하기 위해 아웃고잉 포트를 호출한다.
+- 이제 위 코드에 남겨진 //TODO를 살펴보자
 </div>
 </details>
