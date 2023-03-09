@@ -273,7 +273,6 @@ public class SendMoneyCommand extends SelfValidating<SendMoneyCommand> {
 		this.money = money;
 		...
 		this.validateSelf(); // 여기랑 extends를 왜 받는지 의문임...
-		
 	}
 }
 ```
